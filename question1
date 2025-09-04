@@ -1,0 +1,90 @@
+import string
+def transform(text, shift1, shift2, mode="encrypt"):       #function to encrypt text
+    result=""
+    for char in text:
+        if char.islower():
+            if 'a' <=char <='m':                    #a-m  
+                step=shift1*shift2
+                if mode=="encrypt":
+                    result += chr((ord(char) - ord('a') + step) % 26 + ord('a'))
+                else:
+                    result += chr((ord(char) - ord('a') - step) % 26 + ord('a'))
+            elif 'n' <=char<='z':             #n-z
+                step=shift1+shift2
+                if mode=="encrypt":
+                    result += chr((ord(char) - ord('a') - step) % 26 + ord('a'))
+                else:
+                    result += chr((ord(char) - ord('a') + step) % 26 + ord('a'))
+            else:
+                result+=char
+        elif char.isupper():
+            if 'A' <=char <='M':           #A-M          
+                step=shift1
+                if mode=="encrypt":
+                    result += chr((ord(char) - ord('A') - step) % 26 + ord('A')) 
+                else:
+                    result += chr((ord(char) - ord('A') + step) % 26 + ord('A')) 
+            elif 'N' <=char<='Z':               #N-Z         
+                step=shift2**2
+                if mode=="encrypt":
+                    result += chr((ord(char) - ord('A') + step) % 26 + ord('A'))
+                else:
+                    result += chr((ord(char) - ord('A') - step) % 26 + ord('A'))
+            else:
+                result += char
+        else:
+            result += char
+    return result
+
+def encrypt_file(input_file, output_file, shift1, shift2):        #function to encrypt text
+    with open(input_file, "r", encoding="utf-8") as f:
+        text = f.read()
+
+    encrypted = transform(text, shift1, shift2, mode="encrypt")
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(encrypted)
+
+def decrypt_file(input_file, output_file, shift1, shift2):        #function to decrypt text
+    with open(input_file, "r", encoding="utf-8") as f:
+        text = f.read()
+    decrypted = transform(text, shift1, shift2, mode="decrypt")
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(decrypted)
+
+def verify_files(file1, file2):           #function to verify if two files are matching
+    with open(file1, "r", encoding="utf-8") as f1, open(file2, "r", encoding="utf-8") as f2:
+        original = f1.read()
+        decrypted = f2.read()
+    if original == decrypted:
+        print("Success: original and decrypted texts are the same.")
+
+    else:
+        print("Error: The decrypted file does not match the original file.")
+        for i, (orig,decr) in enumerate(zip(original, decrypted)):
+                if orig != decr:
+                    print(f"Mismatch at position {i}: original '{orig}' != decrypted '{decr}'")
+                    start= max(0,i-5)
+                    end= min(len(original),i+6)
+                    print(f"Context:  '{original[start:end]}'")
+                    break
+def main():
+    input_file = "raw_text.txt"
+    encrypted_file = "encrypted_text.txt"
+    decrypted_file = "decrypted_text.txt"
+    try:
+        s1=int(input("Enter shift1: "))
+        s2=int(input("Enter shift2: "))
+    except ValueError:
+        print("Invalid input. Please enter integers.") 
+        return
+    
+    encrypt_file(input_file, encrypted_file, s1, s2)
+    print("Encryption complete.")
+
+    decrypt_file(encrypted_file, decrypted_file, s1, s2)
+    print("Decryption complete.")
+
+    verify_files(input_file, decrypted_file)
+
+if __name__ == "__main__":
+    main()
